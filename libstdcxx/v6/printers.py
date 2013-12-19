@@ -62,7 +62,7 @@ class StdListPrinter:
         def __iter__(self):
             return self
 
-        def next(self):
+        def __next__(self):
             if self.base == self.head:
                 raise StopIteration
             elt = self.base.cast(self.nodetype).dereference()
@@ -84,7 +84,7 @@ class StdListPrinter:
         elif self.typename == "std::__debug::list":
             nodetype = gdb.lookup_type('std::__norm::_List_node<%s>' % itype).pointer()
         else:
-            raise ValueError, "Cannot cast list node for list printer."
+            raise ValueError("Cannot cast list node for list printer.")
         return self._iterator(nodetype, self.val['_M_impl']['_M_node'])
 
     def to_string(self):
@@ -108,7 +108,7 @@ class StdListIteratorPrinter:
         elif self.typename == "std::__norm::_List_iterator" or self.typename == "std::__norm::_List_const_iterator":
             nodetype = gdb.lookup_type('std::__norm::_List_node<%s>' % itype).pointer()
         else:
-            raise ValueError, "Cannot cast list node for list iterator printer."
+            raise ValueError("Cannot cast list node for list iterator printer.")
         return self.val['_M_node'].cast(nodetype).dereference()['_M_data']
 
 class StdSlistPrinter:
@@ -123,7 +123,7 @@ class StdSlistPrinter:
         def __iter__(self):
             return self
 
-        def next(self):
+        def __next__(self):
             if self.base == 0:
                 raise StopIteration
             elt = self.base.cast(self.nodetype).dereference()
@@ -177,7 +177,7 @@ class StdVectorPrinter:
         def __iter__(self):
             return self
 
-        def next(self):
+        def __next__(self):
             count = self.count
             self.count = self.count + 1
             if self.bitvec:
@@ -252,7 +252,7 @@ class StdTuplePrinter:
             # tuple.
             nodes = self.head.type.fields ()
             if len (nodes) != 1:
-                raise ValueError, "Top of tuple tree does not consist of a single node."
+                raise ValueError("Top of tuple tree does not consist of a single node.")
 
             # Set the actual head to the first pair.
             self.head  = self.head.cast (nodes[0].type)
@@ -261,14 +261,14 @@ class StdTuplePrinter:
         def __iter__ (self):
             return self
 
-        def next (self):
+        def __next__ (self):
             nodes = self.head.type.fields ()
             # Check for further recursions in the inheritance tree.
             if len (nodes) == 0:
                 raise StopIteration
             # Check that this iteration has an expected structure.
             if len (nodes) != 2:
-                raise ValueError, "Cannot parse more than 2 nodes in a tuple tree."
+                raise ValueError("Cannot parse more than 2 nodes in a tuple tree.")
 
             # - Left node is the next recursion parent.
             # - Right node is the actual class contained in the tuple.
@@ -330,7 +330,7 @@ class RbtreeIterator:
     def __len__(self):
         return int (self.size)
 
-    def next(self):
+    def __next__(self):
         if self.count == self.size:
             raise StopIteration
         result = self.node
@@ -392,7 +392,7 @@ class StdMapPrinter:
         def __iter__(self):
             return self
 
-        def next(self):
+        def __next__(self):
             if self.count % 2 == 0:
                 n = self.rbiter.next()
                 n = n.cast(self.type).dereference()['_M_value_field']
@@ -435,8 +435,8 @@ class StdSetPrinter:
         def __iter__(self):
             return self
 
-        def next(self):
-            item = self.rbiter.next()
+        def __next__(self):
+            item = self.rbiter.__next__()
             item = item.cast(self.type).dereference()['_M_value_field']
             # FIXME: this is weird ... what to do?
             # Maybe a 'set' display hint?
@@ -512,7 +512,7 @@ class StdDequePrinter:
         def __iter__(self):
             return self
 
-        def next(self):
+        def __next__(self):
             if self.p == self.last:
                 raise StopIteration
 
@@ -625,7 +625,7 @@ class Tr1HashtableIterator:
         else:
             self.count = self.count + 1
 
-    def next (self):
+    def __next__ (self):
         if not self.node:
             raise StopIteration
         result = self.node.dereference()['_M_v']
@@ -714,7 +714,7 @@ class Printer(object):
         # A small sanity check.
         # FIXME
         if not self.compiled_rx.match(name + '<>'):
-            raise ValueError, 'libstdc++ programming error: "%s" does not match' % name
+            raise ValueError('libstdc++ programming error: "%s" does not match' % name)
         printer = RxPrinter(name, function)
         self.subprinters.append(printer)
         self.lookup[name] = printer
